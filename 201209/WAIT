@@ -1,0 +1,10 @@
+#!/bin/bash
+
+rm -f ./sem.{a,b}
+
+{ sleep 1; echo hogeA; :> ./sem.a; } &
+{ echo hogeB; :> ./sem.b; } &
+
+while sleep 3 ; do
+  [ -e ./sem.a -a -e ./sem.b ] && exit 0
+done

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      var hosts = ["host=ueda@www.usptomo.com&port=21922",
+                   "host=ueda@araibo.is-a-geek.com&port=22"];
+
+      function check(){
+        sar(0,"graph0");
+        sar(1,"graph1");
+      }
+
+      function sar(hostno,target){
+        var h = new XMLHttpRequest();
+        h.onreadystatechange = function(){
+          if(h.readyState != 4 || h.status != 200)
+            return;
+
+          document.getElementById(target).innerHTML = h.responseText;
+        }
+
+        h.open("POST","/cgi-bin/ldavg.cgi",true);
+        h.setRequestHeader("Content-Type",
+            "application/x-www-form-urlencoded");
+        h.send( "d=" + Math.random() + "&" + hosts[hostno]);
+      }
+
+    </script>
+  </head>
+  <body onload="check();setInterval('check()',60000)">
+    <div id="graph0" style="height:600px;width:350px;float:left"></div>
+    <div id="graph1" style="height:600px;width:350px;float:left"></div>
+  </body>
+</html>

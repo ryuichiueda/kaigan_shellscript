@@ -1,0 +1,44 @@
+#!/bin/bash
+#
+# EXTFILE: メールから添付ファイルを抽出する。 
+# usage: EXTFILE <電子メールファイル>
+# written by R. Ueda (r-ueda@usp-lab.com) Oct. 16, 2012
+
+tmp=/home/ueda/tmp/$$
+dest=/home/ueda/MAIL/FILES
+
+[ "$1" = "" ] && exit 1
+##############################################
+#境界文字列を抽出
+grep -i '^Content-Type:' "$1"	|
+grep "multipart/mixed"		|
+#最初にあるもの（=ヘッダにあるもの）だけ処理
+head -n 1			|
+sed 's/..*boundary=//'		|
+#「"」がくっついている場合があるので、取って変数に入れる
+tr -d '"'	> $tmp-boundary
+
+##############################################
+#境界でファイルを分割
+awk -v b="^--$(cat $tmp-boundary)" -v f="$tmp-F" \
+	'{if($0~b){a++};print > f a}' "$1"
+
+##############################################
+#分割したファイルから添付ファイルを作る
+grep -i '^content-disposition:' $tmp-F*			|
+#1:grepの結果から中間ファイル名と添付ファイル名を抜き出す
+tee /tmp/aho	|
+sed 's/^\([^:][^:]*\):..*filename=\(..*\)/\1 \2/'	|
+#1:中間ファイル名 2:添付ファイル名
+tr -d '"'						|
+while read a b ; do
+	#抽出、デコード、出力
+	sed -n '/^$/,$p' "$a"	|
+	base64 -d > "$dest/$(basename $1)_${b}"
+done
+
+#作ったファイルを表示
+ls $dest/$(basename $1)_*
+
+rm -f $tmp-*
+exit 0

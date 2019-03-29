@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      function callCgi(){
+        var h = new XMLHttpRequest();
+        h.onreadystatechange = function(){
+          if(h.readyState != 4 || h.status != 200)
+            return;
+
+          document.body.innerHTML = h.responseText;
+        }
+
+        h.open("POST","/cgi-bin/show.cgi",true);
+        h.setRequestHeader("Content-Type",
+            "application/x-www-form-urlencoded");
+        h.send( "dummy=" + Math.random() );
+      }
+    </script>
+  </head>
+  <body onload="callCgi()">
+  </body>
+</html>

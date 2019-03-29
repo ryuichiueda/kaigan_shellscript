@@ -1,0 +1,39 @@
+#!/bin/bash 
+
+sdir=/home/ueda/Maildir/new
+ddir=/home/ueda/MAIL
+
+tmp=/home/ueda/tmp/$$
+
+cd $sdir || exit 1
+
+######################################
+#ファイルのリストを作る
+echo *.*.*					|
+tr ' ' '\n'					|
+#1:ファイル名
+awk -F. '{print sprintf("%09d",NR), "@" $1,$0}'	> $tmp-files
+#1:レコード番号 2:UNIX時間 3:ファイル名
+
+######################################
+#ファイルのリストに年月日をくっつける
+self 2 $tmp-files			|
+date -f - "+%Y%m%d"			|
+#1:年月日
+awk '{print sprintf("%09d",NR), $1}'	|
+#1:レコード番号 2:年月日
+join1 key=1 - $tmp-files		|
+#1:レコード番号 2:年月日 3:UNIX時間 4:ファイル名
+self 2 4	> $tmp-ymd-file
+#1:年月日 2:ファイル名
+
+cd $ddir || exit 1
+
+cat $tmp-ymd-file	|
+while read ymd file ; do
+	mkdir -p ./$ymd
+	cp -p $sdir/$file ./$ymd/
+done
+
+rm -f $tmp-*
+exit 0

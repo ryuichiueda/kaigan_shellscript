@@ -1,0 +1,45 @@
+#!/bin/bash -xv
+
+tmp=/tmp/$$
++ tmp=/tmp/74163
+convert -compress none $1 $tmp-ppm.ppm
++ convert -compress none 1.jpg /tmp/74163-ppm.ppm
+
+sed 's/#.*$//' $tmp-ppm.ppm	|
+tr ' ' '\n'			|
+awk 'NF==1'			|
+awk '	NR==2{w=$1}
+	NR==3{h=$1}
+	NR==4{d=$1}
+	NR%3==2{n=(NR-5)/3;r[n%w,int(n/w)] = $1}
+	NR%3==0{n=(NR-6)/3;g[n%w,int(n/w)] = $1}
+	NR%3==1{n=(NR-7)/3;b[n%w,int(n/w)] = $1}
+	END{print "P3",w,h,d;
+	for(y=0;y<h;y++){
+		for(x=0;x<w;x++){
+			print g[x,y]
+		}
+	}}'
++ sed 's/#.*$//' /tmp/74163-ppm.ppm
++ tr ' ' '\n'
++ awk NF==1
++ awk '	NR==2{w=$1}
+	NR==3{h=$1}
+	NR==4{d=$1}
+	NR%3==2{n=(NR-5)/3;r[n%w,int(n/w)] = $1}
+	NR%3==0{n=(NR-6)/3;g[n%w,int(n/w)] = $1}
+	NR%3==1{n=(NR-7)/3;b[n%w,int(n/w)] = $1}
+	END{print "P3",w,h,d;
+	for(y=0;y<h;y++){
+		for(x=0;x<w;x++){
+			print g[x,y]
+		}
+	}}'
+awk: division by zero in mod
+ input record number 1, file 
+ source line number 6
+
+rm -f $tmp-*
++ rm -f /tmp/74163-ppm.ppm
+exit 0
++ exit 0

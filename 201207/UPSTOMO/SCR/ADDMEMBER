@@ -1,0 +1,74 @@
+#!/bin/bash
+
+dir="$(dirname $0)/../DATA"
+tmp=/home/ueda/tmp/$$
+
+CHECK(){
+	[ -z "$(echo ${PIPESTATUS[@]} | tr -d '0 ')" ] && return
+
+	echo "エラー: $1" 
+	echo 処理できませんでした。
+	rm -f $tmp-*
+	exit 1
+}
+
+####################################
+#標準入力をファイルに書き出す
+cat < /dev/stdin > $tmp-file
+#1:名前 2:emailアドレス
+CHECK 読み込めません
+
+####################################
+#入力チェック
+
+###入力ファイルが2列か調べる
+[ "$(retu $tmp-file | gyo)" -eq 1 ]
+CHECK 列数
+[ "$(retu $tmp-file)" -eq 2 ]
+CHECK 列数
+
+###@が文字列と文字列の間に挟まっていること
+self 2 $tmp-file        |
+grep '^..*@..*$'        > $tmp-ok-email
+[ "$(gyo $tmp-file)" -eq "$(gyo $tmp-ok-email)" ]
+CHECK email
+
+####################################
+#追記処理
+DATE=$(date +%Y%m%d)
+
+#1:名前 2:email
+cat $tmp-file				|
+#MEMBERと形式を合わせる
+awk -v d="${DATE}" '{print 0,$0,d,"-"}'	|
+#1:会員番号（仮） 2:名前 3:email 4:登録日 5:"-"
+#MEMBERとマージ
+cat $dir/MEMBER -			|
+#1:会員番号 2:名前 3:email 4:登録日 5:退会日
+awk '{if($1==0){$1=n};print;n=$1+1}' > $tmp-new
+CHECK 追加処理失敗
+
+#新しいリストをチェック
+[ "$(retu $tmp-new | gyo)" -eq 1 ]
+CHECK フィールド数が不正
+[ "$(retu $tmp-new)" -eq 5 ]
+CHECK フィールド数が不正
+
+DUP=$(self 3 $tmp-new | sort | uniq -d | gyo)
+[ "${DUP}" -eq 0 ]
+CHECK email重複
+
+######################################
+#更新
+cat $dir/MEMBER > $dir/MEMBER.${DATE}.$$
+CHECK 旧リストのバックアップ
+cat $tmp-new > $dir/MEMBER 
+CHECK 新リストの書き出し
+
+######################################
+#diffで確認
+echo 変更しました >&2
+diff $dir/MEMBER.${DATE}.$$ $dir/MEMBER >&2
+
+rm -f $tmp-*
+exit 0

@@ -1,0 +1,24 @@
+#!/bin/bash 
+# ppmを座標と画素値のレコードに変換
+# written by R. Ueda / Dec. 13, 2012
+
+tmp=/tmp/$$
+
+#コメント除去
+grep -v '^#' < /dev/stdin > $tmp-ppm
+
+#幅（ヘッダ二行目の最初の数字）を代入
+W=$(awk 'NR==2{print $1}' $tmp-ppm)
+
+tail -n +4 $tmp-ppm	|
+#数字を縦に並べる
+tr ' ' '\n'		|
+#空行が入るので除去
+grep -v '^$'		|
+#3個ごとに数字を1レコードにする
+awk '{printf("%d ",$1);if(NR%3==0){print ""}}'	|
+awk -v w=$W '{n=NR-1;print int(n/w),n%w,$0}'	|
+awk '{print sprintf("%04d %04d",$1,$2),$3,$4,$5}'
+
+rm -f $tmp-*
+exit 0

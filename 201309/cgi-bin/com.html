@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>オレオレマシーン情報</title>
+	</head>
+	<body>
+		<form name="FORM" method="GET" action="./com.cgi">
+			コマンド：
+			<select name="COM">
+<!--COMLIST-->
+				<option value="%1">%2</option>
+<!--COMLIST-->
+			</select>
+			<input type="submit" value="ポチ" />
+		</form>
+		<pre>
+<!--RESULT-->
+		</pre>
+	</body>
+</html>

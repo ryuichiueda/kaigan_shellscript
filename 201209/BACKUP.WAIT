@@ -1,0 +1,20 @@
+#!/bin/bash
+
+rm -f ./sem.{1,2}
+
+{
+	tar zcvf vm.tar.gz ~/VM/ &> /dev/null
+	touch ./sem.1
+} &
+
+{
+	tar zcvf old.tar.gz ~/OLD/ &> /dev/null
+	touch ./sem.2
+} &
+
+while sleep 3 ; do
+	if [ -e ./sem.1 -a -e ./sem.2 ] ; then
+		rm ./sem.{1,2}
+		exit 0
+	fi
+done

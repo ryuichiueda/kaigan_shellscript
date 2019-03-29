@@ -1,0 +1,34 @@
+#!/bin/bash -xv
+#
+# TOFUBOX.SYNC
+exec 2> /tmp/$(basename $0)
+
+server=ub.ueda.asia
+dir=/home/ueda
+
+MESSAGE () {
+	DISPLAY=:0 notify-send "豆腐: $1" 
+}
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	DISPLAY=:0 notify-send "豆腐: $1"
+	exit 1
+}
+
+#ロックがとれなかったらすぐ終了
+ssh -o ConnectTimeout=5 $server "mkdir $dir/.tofubox/LOCK" || exit 0
+
+#pull############################
+MESSAGE "受信開始"
+rsync -auz --timeout=30 $server:$dir/TOFUBOX/ $dir/TOFUBOX/
+ERROR_CHECK "受信中断"
+MESSAGE "受信完了"
+
+#push############################
+MESSAGE "送信開始"
+rsync -auz --timeout=30 $dir/TOFUBOX/ $server:$dir/TOFUBOX/
+ERROR_CHECK "送信中断"
+MESSAGE "送信完了"
+
+ssh -o ConnectTimeout=5 $server "rmdir $dir/.tofubox/LOCK"

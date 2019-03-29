@@ -1,0 +1,33 @@
+#!/bin/bash
+
+tmp=/tmp/$$
+
+XWID=$(tput cols | awk '{print int($1/2)}')
+YWID=$(tput lines)
+
+convert -compress none -geometry ${XWID}x${YWID} $1 $tmp-pgm.pgm
+
+cat $tmp-pgm.pgm	|
+grep -v "#"		|
+yarr -4	> $tmp-pgm
+
+head -n 1 $tmp-pgm	> $tmp-header
+tail -n +2 $tmp-pgm	> $tmp-body
+
+XWID=$(self 2 $tmp-header)
+YWID=$(self 3 $tmp-header)
+MAX=$(self 4 $tmp-header)
+
+tr ' ' '\n' < $tmp-body			|
+awk -v m=$MAX '{print int(8*$1/(m+1))}'	|
+awk '{print "\e[4"$1"m_" }'		|
+yarr -$XWID				|
+sed 's/$/\\e\[m\\n/'	> $tmp-work
+
+IMG=$(cat $tmp-work)
+
+echo -e $IMG
+echo -e '\e[m'
+
+rm -f $tmp-*
+exit 0

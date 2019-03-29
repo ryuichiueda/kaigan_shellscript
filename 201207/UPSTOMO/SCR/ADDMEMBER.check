@@ -1,0 +1,22 @@
+#!/bin/bash
+
+tmp=/home/ueda/tmp/$$
+
+CHECK(){
+	[ -z "$(echo ${PIPESTATUS[@]} | tr -d '0 ')" ] && return
+
+	echo "エラー: $1" >&2
+	echo 処理できませんでした。 >&2
+	rm -f $tmp-*
+	exit 1
+}
+
+#テスト
+true | true
+CHECK これは成功する。
+
+true | false
+CHECK falseで失敗
+
+rm -f $tmp-*
+exit 0

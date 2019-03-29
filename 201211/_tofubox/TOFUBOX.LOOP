@@ -1,0 +1,8 @@
+#!/bin/sh -xv
+
+sys=/home/ueda/.tofubox
+ 
+while : ; do
+	$sys/TOFUBOX.SYNC
+	sleep 60
+done

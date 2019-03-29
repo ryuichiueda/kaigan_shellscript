@@ -1,0 +1,5 @@
+#!/bin/bash -xv
+
+
+
+notifywait -e moved_to -e close_write -mr 

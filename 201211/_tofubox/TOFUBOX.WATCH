@@ -1,0 +1,13 @@
+#!/bin/bash -xv
+exec 2> /tmp/$(basename $0)
+
+dir=/home/ueda/TOFUBOX
+sys=/home/ueda/.tofubox
+
+touch $sys/PUSH.REQUEST
+
+inotifywait -e moved_to -e close_write -mr $dir	|
+while read str ; do
+	[ -e $sys/PUSH.REQUEST ] && touch $sys/PUSH.WAIT 
+	touch $sys/PUSH.REQUEST
+done

@@ -1,0 +1,20 @@
+#!/bin/bash 
+
+sdir=/home/ueda/Maildir/new
+ddir=/home/ueda/MAIL
+
+tmp=/home/ueda/tmp/$$
+
+cd $sdir || exit 1
+
+######################################
+#ファイルのリストを作る
+echo *.*.*					|
+tr ' ' '\n'					|
+while read f ; do
+	UNIXTIME="@"$(echo $f | awk -F. '{print $1}')
+	DATE=$(date -d $UNIXTIME "+%Y%m%d")
+
+	[ -e "$ddir/$DATE" ] || mkdir $ddir/$DATE
+	cp -p $f $ddir/$DATE/
+done

@@ -1,0 +1,13 @@
+#!/bin/bash -xv
+
+FROM=$(date +%s)
+
+while sleep 1 ; do
+	TO=$(date +%s)	
+	DIFF=$(( TO - FROM ))
+	if [ "$DIFF" -gt 2 ] ; then
+		killall TOFUBOX.SYNC
+		FROM=$(date +%s)
+	fi
+	FROM=$TO
+done

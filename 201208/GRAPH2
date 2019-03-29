@@ -1,0 +1,51 @@
+#!/bin/bash -vx
+tmp=/tmp/$$
+
+cat ./SED_CONCATE	|
+awk '{print $1,$2/$1,$3/$1}'	|
+awk '{print $1*20+40,200-$2*15,200-$3*15,$1,$2,$3}'	> $tmp-data
+#1:x座標 2:y1座標 3:y2座標 4:xラベル 5:y1ラベル 6:y2ラベル
+
+seq 1 6			|
+awk '{print $1*2}'	|
+awk '{print 200-$1*15,$1,200-$1*15+5}' > $tmp-yaxis
+
+#テンプレートを準備
+cat << EOF > $tmp-template
+<!DOCTYPE html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <svg style="height:500px;width:800px;font-size:16px">
+<!-- YAXIS -->
+	<rect x="50" y="%1" width="250" height="15" fill="lightgray"/>
+	<text x="40" y="%3" style="text-anchor:end" font-size="10pt">%2</text>
+	<line x1="43" y1="%1" x2="50" y2="%1" stroke="black"/>
+<!-- YAXIS -->
+	<line x1="50" y1="200" x2="50" y2="10" stroke="black"/>
+	<line x1="50" y1="200" x2="300" y2="200" stroke="black"/>
+<!-- RECORDS -->
+	<line x1="%1" y1="205" x2="%1" y2="200" stroke="black"/>
+	<text x="%1" y="218" style="text-anchor:middle" font-size="10pt">%4</text>
+	<circle cx="%1" cy="%2" r="2" fill="red"/>
+	<circle cx="%1" cy="%3" r="2" fill="blue"/>
+<!-- RECORDS -->
+<g transform="rotate(-90 100,0)">
+	<text x="0" y="-85" style="text-anchor:middle">sed1個あたりのreal値[s]</text>
+</g>
+	<text x="160" y="235" style="text-anchor:middle">sedの数</text>
+	<text x="240" y="80" style="text-anchor:middle" fill="red">執筆用ノートPC</text>
+	<text x="240" y="165" style="text-anchor:middle" fill="blue">8CPUのサーバ</text>
+</svg>
+</body>
+</html>
+EOF
+
+#レコードをテンプレートに流し込む
+mojihame -lRECORDS $tmp-template $tmp-data	|
+mojihame -lYAXIS - $tmp-yaxis > $tmp-html
+#表示
+chromium-browser $tmp-html
+
+rm -f $tmp-*
+exit 0

@@ -1,0 +1,26 @@
+#!/bin/bash
+exec 2> /dev/null
+
+sys=/home/ueda/.tofubox
+ 
+case "$1" in
+start)
+	ps cax | grep -q TOFUBOX.SUSSTOP && exit 1
+	ps cax | grep -q TOFUBOX.LOOP && exit 1
+	ps cax | grep -q TOFUBOX.WATCH && exit 1
+	${sys}/TOFUBOX.SUSSTOP &
+	${sys}/TOFUBOX.LOOP &
+	${sys}/TOFUBOX.WATCH &
+;;
+stop)
+	killall TOFUBOX.SUSSTOP
+	killall TOFUBOX.LOOP
+	killall TOFUBOX.WATCH
+;;
+*)
+	echo "Usage: service tofubox {start|stop}" >&2
+	exit 1
+;;
+esac
+ 
+exit 0

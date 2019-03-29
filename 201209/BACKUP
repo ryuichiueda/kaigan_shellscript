@@ -1,0 +1,4 @@
+#!/bin/bash -xv
+
+tar zcvf vm.tar.gz ~/VM/ &> /dev/null
+tar zcvf old.tar.gz ~/OLD/ &> /dev/null

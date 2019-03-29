@@ -1,0 +1,55 @@
+#!/bin/bash -xv
+#
+# TOFUBOX.SYNC
+#
+# written by R. Ueda (usp-lab.com)
+exec 2> /tmp/$(basename $0)
+
+server=ub.ueda.asia
+sys=/home/ueda/.tofubox
+
+s="$server:/home/ueda/TOFUBOX/"
+c="/home/ueda/TOFUBOX/"
+
+MESSAGE () {
+	DISPLAY=:0 notify-send "TOFUBOX: $1" 
+}
+
+ERROR_CHECK(){
+	[ "$(echo ${PIPESTATUS[@]} | tr -d ' 0')" = "" ] && return
+	DISPLAY=:0 notify-send "豆腐: $1"
+	exit 1
+}
+
+#ロックがとれなかったらすぐ終了
+ssh -o ConnectTimeout=5 $server "mkdir $sys/LOCK" || exit 0
+
+#同期の必要がなければすぐ終了
+NUM=$(rsync -auzin --timeout=30 $s $c | wc -c)
+#通信に失敗した、あるいは同期済みなら終了
+if [ "$NUM" = "" -o "$NUM" -eq 0 ] ; then
+	ssh -o ConnectTimeout=5 $server "rmdir $sys/LOCK"
+	exit 0
+fi
+
+#pull############################
+MESSAGE "受信開始"
+rsync -auz --timeout=30 $s $c
+ERROR_CHECK "受信中断"
+MESSAGE "受信完了"
+
+#push############################
+while [ -e "$sys/PUSH.REQUEST" ] ; do
+	MESSAGE "送信開始"
+
+	rsync -auz --timeout=30 $c $s
+	ERROR_CHECK "送信中断"
+
+	rm $sys/PUSH.REQUEST
+	[ -e $sys/PUSH.WAIT ] && mv $sys/PUSH.WAIT $sys/PUSH.REQUEST
+
+	MESSAGE "送信完了"
+done
+
+ssh -o ConnectTimeout=5 $server "rmdir $sys/LOCK"
+exit 0

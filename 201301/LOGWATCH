@@ -1,0 +1,23 @@
+#!/bin/bash -vx
+#
+# LOGWATCH: 指定したホストのlogwatchメールを収集
+# usage: ./LOGWATCH <hostname>
+# 
+# written by R. Ueda (r-ueda@usp-lab.com)
+
+[ $1 = "" ] && exit 1
+
+server=$1
+dir=/home/ueda/MAIL
+dest="$dir/LOGWATCH_$server"
+
+cd "$dir" || exit 1
+mkdir -p "$dest" || exit 1
+
+echo ????????.utf8/*			|
+xargs grep -F "From: logwatch@$server"	|
+awk -F: '{print $1,substr($1,1,8)}'	|
+#1:ファイル名 2:日付
+awk -v d="$dest" '{print $1,d "/" $2}'	|
+#1:コピー元 2:コピー先
+xargs -n 2 cp

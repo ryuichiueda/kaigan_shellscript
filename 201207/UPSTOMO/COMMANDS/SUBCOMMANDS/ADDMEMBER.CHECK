@@ -1,0 +1,32 @@
+#!/bin/bash
+
+tmp=/home/ueda/tmp/$$
+
+CHECK(){
+	[ -z "$(echo ${PIPESTATUS[@]} | tr -d '0 ')" ] && return
+
+	echo "エラー: $1" >&2
+	rm -f $tmp-*
+	exit 1
+}
+
+####################################
+#標準入力をファイルに書き出す
+cat < /dev/stdin > $tmp-file
+#1:名前 2:emailアドレス
+
+####################################
+#入力ファイルが2列か調べる
+RETU=$(retu < $tmp-file | tr -d '\n ')
+[ "$RETU" = "2" ]
+CHECK 列数
+
+####################################
+#@が文字列と文字列の間に挟まっていること
+self 2 $tmp-file	|
+grep '^..*@..*$'	> $tmp-ok-email
+[ "$(gyo $tmp-file)" -eq "$(gyo $tmp-ok-email)" ] 
+CHECK email
+
+rm -f $tmp-*
+exit 0

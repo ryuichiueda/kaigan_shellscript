@@ -1,0 +1,22 @@
+#!/bin/bash -xv
+
+dir=/home/ueda/.tofubox
+
+exec 2> /dev/null
+
+n=0
+while sleep 3 ; do
+	n=$(( $n + 1 ))
+
+	#LOCKディレクトリがなければOK
+	ls -d $dir/LOCK &> /dev/null || n=0
+
+	#rsyncプロセスがあれば出る
+	ps cax | grep -q rsync && n=0
+
+	if [ "$n" -eq 20 ] ; then
+		rmdir $dir/LOCK
+		n=0
+	fi
+done
+
